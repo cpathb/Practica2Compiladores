@@ -37,37 +37,37 @@ RANGODE             ".."
 
 %%
 
-{ENTERO} /* Enteros */ return NUMEROENTERO;
-{BINARIO} /* Binarios */ return NUMEROBINARIO;
-{HEXADECIMAL} /* Hexadecimal */ return NUMEROHEXADECIMAL;
-{CIENTIFICO} /* Científico */ return NUMEROCIENTIFICO;
-{DECIMAL} /* Decimal */ return NUMERODECIMAL;
-{DECIMALCIENTIFICO} /* Decimal Científico */ return NUMEROCIENTIFICO;
-{IDENTIFICADOR} /* Identificador */ return -2; 
-{TOKENSIMPLE} /*TOKEN Simple*/ return (int) yytext[0];
-{IGUALIGUALQUE} /* == */ return IGUALIGUAL;
-{DISTINTOQUE}  /* != */ return DISTINTO;           
-{MAYORIGUALQUE} /* >= */ return MAYORIGUAL;
-{MENORIGUALQUE} /* <= */ return MENORIGUAL;
-{IGUALMAYORQUE} /* => */ return IGUALMAYOR;   
-{IGUALMENORQUE} /* =< */ return IGUALMENOR; 
-{MASIGUALQUE} /* += */ return MASIGUAL; 
-{MENOSIGUALQUE} /* -= */ return MENOSIGUAL; 
-{PORIGUALQUE} /* *= */ return PORIGUAL; 
-{BARRAIGUALQUE} /* /= */ return BARRAIGUAL; 
-{MASMASQUE} /* ++ */ return MASMAS; 
-{MENOSMENOSQUE} /* -- */ return MENOSMENOS; 
-{RANGODE} /* .. */ return RANGO; 
+{ENTERO} /* Enteros */ return(NUMEROENTERO);
+{BINARIO} /* Binarios */ return(NUMEROBINARIO);
+{HEXADECIMAL} /* Hexadecimal */ return(NUMEROHEXADECIMAL);
+{CIENTIFICO} /* Científico */ return(NUMEROCIENTIFICO);
+{DECIMAL} /* Decimal */ return(NUMERODECIMAL);
+{DECIMALCIENTIFICO} /* Decimal Científico */ return(NUMEROCIENTIFICO);
+{IDENTIFICADOR} /* Identificador */ return(-2); 
+{TOKENSIMPLE} /*TOKEN Simple*/ return((int) yytext[0]);
+{IGUALIGUALQUE} /* == */ return(IGUALIGUAL);
+{DISTINTOQUE}  /* != */ return(DISTINTO);           
+{MAYORIGUALQUE} /* >= */ return(MENORIGUAL);
+{IGUALMAYORQUE} /* => */ return(IGUALMAYOR);   
+{IGUALMENORQUE} /* =< */ return(IGUALMENOR); 
+{MASIGUALQUE} /* += */ return(MASIGUAL); 
+{MENOSIGUALQUE} /* -= */ return(MENOSIGUAL); 
+{PORIGUALQUE} /* *= */ return(PORIGUAL); 
+{BARRAIGUALQUE} /* /= */ return(BARRAIGUAL); 
+{MASMASQUE} /* ++ */ return(MASMAS); 
+{MENOSMENOSQUE} /* -- */ return(MENOSMENOS); 
+{RANGODE} /* .. */ return(RANGO); 
 {COMENTARIOLINEA} /* Comentario de línea */
-\n linea++;
+\n /* Salto de línea*/ linea++;
 [ \t\r\b\f] /* Simbolos que no se tienen que contemplar */
+<EOF> /*Fin de archivo*/ return(-1);
 
 "/*" BEGIN(COMENTARIOMULTILINEA);                    
 <COMENTARIOMULTILINEA>[^*\n]*
 <COMENTARIOMULTILINEA>"*"+[^*/\n]* 
 <COMENTARIOMULTILINEA>\n linea++;
 <COMENTARIOMULTILINEA>"*"+"/" BEGIN(INITIAL);
-<COMENTARIOMULTILINEA><<EOF>> ImprimirError(9,linea); BEGIN(INITIAL);
+<COMENTARIOMULTILINEA><<EOF>> ImprimirError(9,linea); return(-1); BEGIN(INITIAL);
     
 "/+" anidamiento++; BEGIN(COMENTARIOANIDAMIENTO); /* BUCLE*/
 <COMENTARIOANIDAMIENTO>[^+\n]*
@@ -80,33 +80,27 @@ RANGODE             ".."
                                     }
                             }
 <COMENTARIOANIDAMIENTO>\n linea++;
-<COMENTARIOANIDAMIENTO><<EOF>> ImprimirError(9,linea);  BEGIN(INITIAL);
+<COMENTARIOANIDAMIENTO><<EOF>> ImprimirError(9,linea); return(-1); BEGIN(INITIAL);
 
 "/**" yymore(); BEGIN(COMENTARIODOC);
 <COMENTARIODOC>[^*\n]* yymore();
 <COMENTARIODOC>"*"+[^*/\n]* yymore();
 <COMENTARIODOC>\n linea++; yymore();
-<COMENTARIODOC>"*"+"/" yymore();BEGIN(INITIAL); return COMENTARIODOCUMENTACION;
-<COMENTARIODOC><<EOF>> yyrestart(yyin); ImprimirError(9,linea); BEGIN(INITIAL);
+<COMENTARIODOC>"*"+"/" yymore();BEGIN(INITIAL); return(COMENTARIODOCUMENTACION);
+<COMENTARIODOC><<EOF>> yyrestart(yyin); ImprimirError(9,linea); return(-1); BEGIN(INITIAL);
 
 "/**/" /* Sirve para eliminar el caso de un comentario de documentación falso*/
 
 "\'" yymore(); BEGIN(COMILLAS);
 <COMILLAS>[^\'\n]* yymore();
 <COMILLAS>\n yymore(); linea++;
-<COMILLAS>"\'" yymore(); BEGIN(INITIAL); return CADENALITERAL;
-<COMILLAS><<EOF>> yyrestart(yyin);ImprimirError(7,linea); BEGIN(INITIAL);
+<COMILLAS>"\'" yymore(); BEGIN(INITIAL); return(CADENALITERAL);
+<COMILLAS><<EOF>> yyrestart(yyin);ImprimirError(7,linea); return(-1); BEGIN(INITIAL);
 
 "\"" yymore(); BEGIN(COMILLAD);
 <COMILLAD>[^\"\n]* yymore();
 <COMILLAD>\n yymore(); linea++;
-<COMILLAD>"\"" yymore(); BEGIN(INITIAL); return CADENALITERAL;
-<COMILLAD><<EOF>> yyrestart(yyin);ImprimirError(8,linea); BEGIN(INITIAL);
+<COMILLAD>"\"" yymore(); BEGIN(INITIAL); return(CADENALITERAL);
+<COMILLAD><<EOF>> yyrestart(yyin);ImprimirError(8,linea); return(-1); BEGIN(INITIAL);
 
 %%
-
-int main(){
-    yyin=fopen("regression.d","r");
-    yylex();
-    fclose(yyin);
-}
