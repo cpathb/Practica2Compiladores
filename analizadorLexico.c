@@ -1,18 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 #include "tablaSimbolos.h"
-#include "sistemaEntrada.h"
-#include "definiciones.h"
 #include "lex.yy.c"
 
 
 // Inicio de funciones
-
-// Función para inicializar el Analizador Léxico
-void inicializarAnalizadorLexico(){
-    tamMaxLexema=tamMaximoLexema();
-}
 
 // Función que devuelve el siguiente lexema del sistema de entrada, si se acabaron los lexemas se devuelve NULL
 tipoelem * siguienteLexema(){
@@ -26,8 +18,9 @@ tipoelem * siguienteLexema(){
         elemento->lexema=NULL;
     }
 
-    if(elemento->compLex==-2){ // Si se ha encontrado fin de fichero
-        elemento->lexema=yytext;
+    if(elemento->compLex==-2){ // Si se ha encontrado un posible "identificador", aquí realizamos la diferencia entre palabra reservada y identificador
+        elemento->lexema=strcpy(elemento->lexema,yytext);
+        elemento->compLex=obtenerCompLex(yytext);
     }
     
     return elemento;
