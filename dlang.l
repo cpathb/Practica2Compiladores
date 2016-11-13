@@ -8,6 +8,8 @@
 %x COMENTARIOMULTILINEA
 %x COMENTARIOANIDAMIENTO
 %x COMENTARIODOC
+%x COMILLAD
+%x COMILLAS
 
 DIGITO              [0-9]
 ENTERO              ({DIGITO}[_]?)+
@@ -17,8 +19,6 @@ CIENTIFICO          {ENTERO}[eE][+-]?{ENTERO}
 DECIMAL             {ENTERO}"."{ENTERO}
 DECIMALCIENTIFICO   {DECIMAL}[eE][+-]?{ENTERO}
 IDENTIFICADOR       [_a-zA-Z][_a-zA-Z0-9]*
-LITERALSIMPLE       ['].*[']
-LITERALDOBLE        ["].*["]
 COMENTARIOLINEA     "//"[^\n]*
 TOKENSIMPLE         [\+\-\*\/\=\>\<\|\&\.\!\\\(\)\[\]\{\}\?\,\;\:\$\%\^\~\@\#]
 IGUALIGUALQUE       "=="
@@ -37,32 +37,30 @@ RANGODE             ".."
 
 %%
 
-{ENTERO} /* Enteros */ printf("Entero: %s - %d\n", yytext, NUMEROENTERO);
-{BINARIO} /* Binarios */ printf("Entero Binario: %s - %d\n", yytext, NUMEROBINARIO);
-{HEXADECIMAL} /* Hexadecimal */ printf("Entero Hexadecimal: %s  - %d\n", yytext, NUMEROHEXADECIMAL);
-{CIENTIFICO} /* Científico */ printf("Entero Científico: %s  - %d\n", yytext, NUMEROCIENTIFICO);
-{DECIMAL} /* Decimal */ printf("Decimal: %s  - %d\n", yytext, NUMERODECIMAL);
-{DECIMALCIENTIFICO} /* Decimal Científico */ printf("Decimal Científico: %s  - %d\n", yytext ,NUMEROCIENTIFICO);
-{IDENTIFICADOR} /* Identificador */ printf("Identificador: %s  - %d\n", yytext, 408); /*HACER QUE BUSQUE EN LA TABLA DE SÍMBOLOS*/
-{LITERALSIMPLE} /* Literal comilla simple */ printf("Literal comilla simple: %s  - %d\n", yytext, CADENALITERAL);
-{LITERALDOBLE} /* Literal comilla doble */ printf("Literal comilla doble: %s  - %d\n", yytext, CADENALITERAL);
-{TOKENSIMPLE} /*TOKEN Simple*/ printf("TOKEN: %s  - %d\n", yytext, yytext[0]);
-{IGUALIGUALQUE} /* == */ printf("Igual Igual: %s  - %d\n", yytext,IGUALIGUAL);
-{DISTINTOQUE}  /* != */ printf("Distinto: %s  - %d\n", yytext, DISTINTO);           
-{MAYORIGUALQUE} /* >= */ printf("Mayor Igual: %s  - %d\n", yytext,MAYORIGUAL);
-{MENORIGUALQUE} /* <= */ printf("Menor Igual: %s  - %d\n", yytext,MENORIGUAL);
-{IGUALMAYORQUE} /* => */ printf("Igual Mayor: %s  - %d\n", yytext, IGUALMAYOR);   
-{IGUALMENORQUE} /* =< */ printf("Igual Menor: %s  - %d\n", yytext,IGUALMENOR); 
-{MASIGUALQUE} /* += */ printf("Mas Igual: %s  - %d\n", yytext,MASIGUAL); 
-{MENOSIGUALQUE} /* -= */ printf("Menos Igual: %s  - %d\n", yytext,MENOSIGUAL); 
-{PORIGUALQUE} /* *= */ printf("Por Igual: %s  - %d\n", yytext,PORIGUAL); 
-{BARRAIGUALQUE} /* /= */ printf("Barra Igual: %s  - %d\n", yytext,BARRAIGUAL); 
-{MASMASQUE} /* ++ */ printf("Mas Mas: %s  - %d\n", yytext,MASMAS); 
-{MENOSMENOSQUE} /* -- */ printf("Menos Menos: %s  - %d\n", yytext,MENOSMENOS); 
-{RANGODE} /* .. */ printf("Rango: %s  - %d\n", yytext,RANGO); 
+{ENTERO} /* Enteros */ return NUMEROENTERO;
+{BINARIO} /* Binarios */ return NUMEROBINARIO;
+{HEXADECIMAL} /* Hexadecimal */ return NUMEROHEXADECIMAL;
+{CIENTIFICO} /* Científico */ return NUMEROCIENTIFICO;
+{DECIMAL} /* Decimal */ return NUMERODECIMAL;
+{DECIMALCIENTIFICO} /* Decimal Científico */ return NUMEROCIENTIFICO;
+{IDENTIFICADOR} /* Identificador */ return -2; 
+{TOKENSIMPLE} /*TOKEN Simple*/ return (int) yytext[0];
+{IGUALIGUALQUE} /* == */ return IGUALIGUAL;
+{DISTINTOQUE}  /* != */ return DISTINTO;           
+{MAYORIGUALQUE} /* >= */ return MAYORIGUAL;
+{MENORIGUALQUE} /* <= */ return MENORIGUAL;
+{IGUALMAYORQUE} /* => */ return IGUALMAYOR;   
+{IGUALMENORQUE} /* =< */ return IGUALMENOR; 
+{MASIGUALQUE} /* += */ return MASIGUAL; 
+{MENOSIGUALQUE} /* -= */ return MENOSIGUAL; 
+{PORIGUALQUE} /* *= */ return PORIGUAL; 
+{BARRAIGUALQUE} /* /= */ return BARRAIGUAL; 
+{MASMASQUE} /* ++ */ return MASMAS; 
+{MENOSMENOSQUE} /* -- */ return MENOSMENOS; 
+{RANGODE} /* .. */ return RANGO; 
 {COMENTARIOLINEA} /* Comentario de línea */
 \n linea++;
-[ \t]
+[ \t\r\b\f] /* Simbolos que no se tienen que contemplar */
 
 "/*" BEGIN(COMENTARIOMULTILINEA);                    
 <COMENTARIOMULTILINEA>[^*\n]*
@@ -84,11 +82,31 @@ RANGODE             ".."
 <COMENTARIOANIDAMIENTO>\n linea++;
 <COMENTARIOANIDAMIENTO><<EOF>> ImprimirError(9,linea);  BEGIN(INITIAL);
 
+"/**" yymore(); BEGIN(COMENTARIODOC);
+<COMENTARIODOC>[^*\n]* yymore();
+<COMENTARIODOC>"*"+[^*/\n]* yymore();
+<COMENTARIODOC>\n linea++; yymore();
+<COMENTARIODOC>"*"+"/" yymore();BEGIN(INITIAL); return COMENTARIODOCUMENTACION;
+<COMENTARIODOC><<EOF>> yyrestart(yyin); ImprimirError(9,linea); BEGIN(INITIAL);
+
+"/**/" /* Sirve para eliminar el caso de un comentario de documentación falso*/
+
+"\'" yymore(); BEGIN(COMILLAS);
+<COMILLAS>[^\'\n]* yymore();
+<COMILLAS>\n yymore(); linea++;
+<COMILLAS>"\'" yymore(); BEGIN(INITIAL); return CADENALITERAL;
+<COMILLAS><<EOF>> yyrestart(yyin);ImprimirError(7,linea); BEGIN(INITIAL);
+
+"\"" yymore(); BEGIN(COMILLAD);
+<COMILLAD>[^\"\n]* yymore();
+<COMILLAD>\n yymore(); linea++;
+<COMILLAD>"\"" yymore(); BEGIN(INITIAL); return CADENALITERAL;
+<COMILLAD><<EOF>> yyrestart(yyin);ImprimirError(8,linea); BEGIN(INITIAL);
+
 %%
 
 int main(){
-    yyin=fopen("reggression.d","r");
+    yyin=fopen("regression.d","r");
     yylex();
-    printf("Número de líneas: %d\n", linea);
     fclose(yyin);
 }
