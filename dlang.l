@@ -60,14 +60,13 @@ RANGODE             ".."
 {COMENTARIOLINEA} /* Comentario de línea */
 \n /* Salto de línea*/ linea++;
 [ \t\r\b\f] /* Simbolos que no se tienen que contemplar */
-<EOF> /*Fin de archivo*/ return(-1);
 
 "/*" BEGIN(COMENTARIOMULTILINEA);                    
 <COMENTARIOMULTILINEA>[^*\n]*
 <COMENTARIOMULTILINEA>"*"+[^*/\n]* 
 <COMENTARIOMULTILINEA>\n linea++;
 <COMENTARIOMULTILINEA>"*"+"/" BEGIN(INITIAL);
-<COMENTARIOMULTILINEA><<EOF>> ImprimirError(9,linea); return(-1); BEGIN(INITIAL);
+<COMENTARIOMULTILINEA><<EOF>> ImprimirError(9,linea); BEGIN(INITIAL);
     
 "/+" anidamiento++; BEGIN(COMENTARIOANIDAMIENTO); /* BUCLE*/
 <COMENTARIOANIDAMIENTO>[^+\n]*
@@ -80,27 +79,29 @@ RANGODE             ".."
                                     }
                             }
 <COMENTARIOANIDAMIENTO>\n linea++;
-<COMENTARIOANIDAMIENTO><<EOF>> ImprimirError(9,linea); return(-1); BEGIN(INITIAL);
+<COMENTARIOANIDAMIENTO><<EOF>> ImprimirError(9,linea); BEGIN(INITIAL);
 
 "/**" yymore(); BEGIN(COMENTARIODOC);
 <COMENTARIODOC>[^*\n]* yymore();
 <COMENTARIODOC>"*"+[^*/\n]* yymore();
 <COMENTARIODOC>\n linea++; yymore();
-<COMENTARIODOC>"*"+"/" yymore();BEGIN(INITIAL); return(COMENTARIODOCUMENTACION);
-<COMENTARIODOC><<EOF>> yyrestart(yyin); ImprimirError(9,linea); return(-1); BEGIN(INITIAL);
+<COMENTARIODOC>"*"+"/" BEGIN(INITIAL); return(COMENTARIODOCUMENTACION);
+<COMENTARIODOC><<EOF>> yyrestart(yyin); ImprimirError(9,linea); BEGIN(INITIAL);
 
 "/**/" /* Sirve para eliminar el caso de un comentario de documentación falso*/
 
 "\'" yymore(); BEGIN(COMILLAS);
-<COMILLAS>[^\'\n]* yymore();
+<COMILLAS>[^'\n]* yymore();
 <COMILLAS>\n yymore(); linea++;
-<COMILLAS>"\'" yymore(); BEGIN(INITIAL); return(CADENALITERAL);
+<COMILLAS>"\'" BEGIN(INITIAL); return(CADENALITERAL);
 <COMILLAS><<EOF>> yyrestart(yyin);ImprimirError(7,linea); return(-1); BEGIN(INITIAL);
 
 "\"" yymore(); BEGIN(COMILLAD);
-<COMILLAD>[^\"\n]* yymore();
+<COMILLAD>[^"\n]* yymore();
 <COMILLAD>\n yymore(); linea++;
-<COMILLAD>"\"" yymore(); BEGIN(INITIAL); return(CADENALITERAL);
-<COMILLAD><<EOF>> yyrestart(yyin);ImprimirError(8,linea); return(-1); BEGIN(INITIAL);
+<COMILLAD>"\"" BEGIN(INITIAL); return(CADENALITERAL);
+<COMILLAD><<EOF>> yyrestart(yyin);ImprimirError(8,linea); BEGIN(INITIAL);
+
+<<EOF>> /*Fin de archivo*/ return(-1);
 
 %%

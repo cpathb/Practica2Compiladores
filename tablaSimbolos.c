@@ -1,8 +1,6 @@
 #include <string.h>
 #include "tablaSimbolos.h" 
 
-
-
 //Definicion de funciones
 void insertarReservadasValor();
 
