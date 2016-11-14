@@ -103,10 +103,10 @@ RANGODE             ".."
 <COMILLAS>\\t                                                   |
 <COMILLAS>\\v                                                   |
 <COMILLAS>\\\"                                                  yymore();
-<COMILLAS>[^'\n]* yymore();
 <COMILLAS>\n yymore(); linea++;
 <COMILLAS>"\'" BEGIN(INITIAL); return(CADENALITERAL);
 <COMILLAS><<EOF>> yyrestart(yyin);ImprimirError(7,linea); return(-1); BEGIN(INITIAL);
+<COMILLAS>[.]* yymore();
 
 "\"" yymore(); BEGIN(COMILLAD);
 <COMILLAD>\\\'                                                  |
@@ -121,10 +121,10 @@ RANGODE             ".."
 <COMILLAD>\\t                                                   |
 <COMILLAD>\\v                                                   |
 <COMILLAD>\\\"                                                  yymore();
-<COMILLAD>[^"\n]* yymore();
 <COMILLAD>\n yymore(); linea++;
 <COMILLAD>"\"" BEGIN(INITIAL); return(CADENALITERAL);
 <COMILLAD><<EOF>> yyrestart(yyin);ImprimirError(8,linea); BEGIN(INITIAL);
+<COMILLAD>[.]* yymore();
 
 <<EOF>> /*Fin de archivo*/ return(-1);
 
