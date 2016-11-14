@@ -91,12 +91,36 @@ RANGODE             ".."
 "/**/" /* Sirve para eliminar el caso de un comentario de documentación falso*/
 
 "\'" yymore(); BEGIN(COMILLAS);
+<COMILLAS>\\\'                                                  |
+<COMILLAS>\\\?                                                  |
+<COMILLAS>\\\\                                                  |
+<COMILLAS>\\0                                                   |
+<COMILLAS>\\a                                                   |
+<COMILLAS>\\b                                                   |
+<COMILLAS>\\f                                                   |
+<COMILLAS>\\n                                                   |
+<COMILLAS>\\r                                                   |
+<COMILLAS>\\t                                                   |
+<COMILLAS>\\v                                                   |
+<COMILLAS>\\\"                                                  yymore();
 <COMILLAS>[^'\n]* yymore();
 <COMILLAS>\n yymore(); linea++;
 <COMILLAS>"\'" BEGIN(INITIAL); return(CADENALITERAL);
 <COMILLAS><<EOF>> yyrestart(yyin);ImprimirError(7,linea); return(-1); BEGIN(INITIAL);
 
 "\"" yymore(); BEGIN(COMILLAD);
+<COMILLAD>\\\'                                                  |
+<COMILLAD>\\\?                                                  |
+<COMILLAD>\\\\                                                  |
+<COMILLAD>\\0                                                   |
+<COMILLAD>\\a                                                   |
+<COMILLAD>\\b                                                   |
+<COMILLAD>\\f                                                   |
+<COMILLAD>\\n                                                   |
+<COMILLAD>\\r                                                   |
+<COMILLAD>\\t                                                   |
+<COMILLAD>\\v                                                   |
+<COMILLAD>\\\"                                                  yymore();
 <COMILLAD>[^"\n]* yymore();
 <COMILLAD>\n yymore(); linea++;
 <COMILLAD>"\"" BEGIN(INITIAL); return(CADENALITERAL);
