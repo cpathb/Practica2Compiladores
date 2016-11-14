@@ -17,6 +17,8 @@ utilizar el siguiente enlace para acceder a un interprete online:
 <br>
 <br>
 <br>
+<br>
+<br>
 
 # _**Analizador Léxico empleando FLEX**_
 
@@ -25,7 +27,7 @@ utilizar el siguiente enlace para acceder a un interprete online:
 <br>
 <br>
 <br>
-<br>
+
 # Autor: Carlos Parada Alfaya
 
 <br>
@@ -46,6 +48,8 @@ Para garantizar la correcta compilación de la práctica practica se ruega que u
 ### **Compilación del fichero de flex** 
 > flex dlang.l
 
+<br>
+<br>
 <br>
 
 ### **Compilación de los ficheros de fuente del programa**
